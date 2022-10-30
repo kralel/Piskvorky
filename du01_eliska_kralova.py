@@ -2,19 +2,22 @@
 # hráč vyhrál, ani kolizi v políčkách. Hráči zadávají souřadnice do konzole,
 # průběh hry je vykreslen želví grafikou
 
-from turtle import forward, exitonclick, left, right, circle, speed, setpos, hideturtle, pendown, penup, home
+from turtle import forward, left, right, circle, speed, setpos, hideturtle, pendown, penup, home, color, width
 from math import sqrt
 
 a = int(input("Zadej počet sloupců:"))
 b = int(input("Zadej počet řádků:"))
 strana = 50
 uhlopricka = sqrt(strana**2+strana**2)
+
 def krizek(x, y):
+	home()							# Umístění do poč. bodu a nulové rotace
 	penup()
 	setpos(x*strana, y*strana)
 	right(45)
-	penup()
 	forward(10)
+	width(5)
+	color("blue")
 	pendown()
 	forward(uhlopricka-20)
 	penup()
@@ -26,17 +29,33 @@ def krizek(x, y):
 	pendown()
 	forward(uhlopricka-20)
 	penup()
+
+def kolecko (x, y):
 	home()
-	
+	penup()
+	setpos(x*strana, y*strana)
+	right(90)
+	forward(strana)
+	left(90)
+	forward(strana/2)
+	left(90)
+	forward(5)
+	right(90)
+	width(5)
+	color("red")
+	pendown()
+	circle(20)
+	penup()
 
-speed(10)
-#hideturtle()
 
-rows=[]
+speed(0)
+hideturtle()
+
+plan=[]
 for y in range(b):
-	rows.append([])
+	plan.append([])
 	for x in range(a):
-		rows[y].append(0)
+		plan[y].append(0)
 		for i in range(4):
 			forward(strana)
 			right(90)
@@ -47,15 +66,30 @@ for y in range(b):
 	forward(strana)
 	left(90)
 
+
 speed("normal")
+znaky = 0										# Počet umístěných znaků
 
-while rows != [1, 1, 1]:
-	x = int(input("Zadej číslo sloupce:"))
-	y = int(input("Zadej číslo řádku:"))
-	krizek(x-1, -(y-1))	# Turtle - poč. souřadnic vlevo dole X hráč - poč. souřadnic vlevo nahoře => -y
+while znaky != a*b:								# Existuje volné pole?
+	# Počítání od 0 => "zadané pole" - 1
+	# Turtle - poč. souřadnic vlevo dole X Hráč - poč. souřadnic vlevo nahoře => -y
+	x = int(input("Hráč " + str(znaky%2 + 1) + ": zadej číslo sloupce:"))-1	
+	y = -(int(input("Hráč " + str(znaky%2 + 1) + ": zadej číslo řádku:"))-1)
+		
+	if x < a and y > -b and x >= 0 and y <= -0:
+		if plan[y][x] != 0:						# Je dané pole volné?
+			print("Pole je obsazené!")
+		elif znaky%2 == 0:						# Hráč 1
+			krizek(x, y)
+			plan[y][x] = 1
+			znaky += 1
+		else:									# Hráč 2
+			kolecko(x, y)
+			plan[y][x] = 2
+			znaky += 1
+	else:
+		print("Neplatné pole!")
 
-if rows == [1, 1, 1]:
+if znaky == a*b:
 	print("Hrací pole je plné! Konec hry.")
 	exit()
-
-exitonclick()
