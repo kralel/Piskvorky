@@ -2,7 +2,7 @@
 # hráč vyhrál, ani kolizi v políčkách. Hráči zadávají souřadnice do konzole,
 # průběh hry je vykreslen želví grafikou
 
-from turtle import forward, left, right, circle, speed, setpos, hideturtle, pendown, penup, home, color, width
+from turtle import exitonclick, forward, left, right, circle, speed, setpos, hideturtle, pendown, penup, home, color, width
 from math import sqrt
 
 a = int(input("Zadej počet sloupců:"))
@@ -44,7 +44,7 @@ def kolecko (x, y):
 	width(5)
 	color("red")
 	pendown()
-	circle(20)
+	circle(strana/2-5)
 	penup()
 
 
@@ -67,29 +67,35 @@ for y in range(b):
 	left(90)
 
 
-speed("normal")
-znaky = 0										# Počet umístěných znaků
 
-while znaky != a*b:								# Existuje volné pole?
+speed("normal")
+tahy = 0										# Počet umístěných znaků
+
+
+while tahy != a*b:								# Existuje volné pole?
 	# Počítání od 0 => "zadané pole" - 1
 	# Turtle - poč. souřadnic vlevo dole X Hráč - poč. souřadnic vlevo nahoře => -y
-	x = int(input("Hráč " + str(znaky%2 + 1) + ": zadej číslo sloupce:"))-1	
-	y = -(int(input("Hráč " + str(znaky%2 + 1) + ": zadej číslo řádku:"))-1)
+	x = int(input("Hráč " + str(tahy%2 + 1) + ": zadej číslo sloupce:"))-1	
+	y = -(int(input("Hráč " + str(tahy%2 + 1) + ": zadej číslo řádku:"))-1)
 		
-	if x < a and y > -b and x >= 0 and y <= -0:
+	if x < a and x >= 0 and y > -b and y <= -0:
 		if plan[y][x] != 0:						# Je dané pole volné?
 			print("Pole je obsazené!")
-		elif znaky%2 == 0:						# Hráč 1
+			continue
+		elif tahy%2 == 0:						# Hráč 1
 			krizek(x, y)
 			plan[y][x] = 1
-			znaky += 1
+			tahy += 1
+			
 		else:									# Hráč 2
 			kolecko(x, y)
 			plan[y][x] = 2
-			znaky += 1
+			tahy += 1
+			
 	else:
 		print("Neplatné pole!")
+	continue
 
-if znaky == a*b:
+if tahy == a*b:
 	print("Hrací pole je plné! Konec hry.")
-	exit()
+	exitonclick()
