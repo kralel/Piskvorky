@@ -94,7 +94,6 @@ while tahy != a*b:								# Existuje volné pole?
 			
 	else:
 		print("Neplatné pole!")
-	continue
 
 if tahy == a*b:
 	print("Hrací pole je plné! Konec hry.")
