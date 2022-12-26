@@ -1,18 +1,19 @@
-# Napište hru piškvorky na 3x3 polích. Program nemusí umět vyhodnocovat, že nějaký
-# hráč vyhrál, ani kolizi v políčkách. Hráči zadávají souřadnice do konzole,
-# průběh hry je vykreslen želví grafikou
-
 from turtle import exitonclick, forward, left, right, circle, speed, setpos, hideturtle, pendown, penup, home, color, width
 from math import sqrt
 
-a = int(input("Zadej počet sloupců:"))
-b = int(input("Zadej počet řádků:"))
+try:
+	sit = int(input("Zadej počet sloupců a řádků ve čtvercové síti:"))
+except ValueError:
+	print("Nebylo zadáno číslo!")
+	exit()
+sloupec = sit
+radek = sit
 strana = 50
 uhlopricka = sqrt(strana**2+strana**2)
 
 def krizek(x, y):
-	home()							# Umístění do poč. bodu a nulové rotace
 	penup()
+	home()							# Umístění do poč. bodu a nulové rotace
 	setpos(x*strana, y*strana)
 	right(45)
 	forward(10)
@@ -31,8 +32,8 @@ def krizek(x, y):
 	penup()
 
 def kolecko (x, y):
-	home()
 	penup()
+	home()
 	setpos(x*strana, y*strana)
 	right(90)
 	forward(strana)
@@ -52,16 +53,16 @@ speed(0)
 hideturtle()
 
 plan=[]
-for y in range(b):
+for y in range(radek):
 	plan.append([])
-	for x in range(a):
+	for x in range(sloupec):
 		plan[y].append(0)
 		for i in range(4):
 			forward(strana)
 			right(90)
 		forward(strana)
 	left(180)
-	forward(a*strana)
+	forward(sloupec*strana)
 	left(90)
 	forward(strana)
 	left(90)
@@ -72,13 +73,16 @@ speed("normal")
 tahy = 0										# Počet umístěných znaků
 
 
-while tahy != a*b:								# Existuje volné pole?
+while tahy != sloupec*radek:								# Existuje volné pole?
 	# Počítání od 0 => "zadané pole" - 1
 	# Turtle - poč. souřadnic vlevo dole X Hráč - poč. souřadnic vlevo nahoře => -y
-	x = int(input("Hráč " + str(tahy%2 + 1) + ": zadej číslo sloupce:"))-1	
-	y = -(int(input("Hráč " + str(tahy%2 + 1) + ": zadej číslo řádku:"))-1)
-		
-	if x < a and x >= 0 and y > -b and y <= -0:
+	try:
+		x = int(input("Hráč " + str(tahy%2 + 1) + ": zadej číslo sloupce:"))-1	
+		y = -(int(input("Hráč " + str(tahy%2 + 1) + ": zadej číslo řádku:"))-1)
+	except ValueError:
+		print("Nebylo zadáno číslo!")
+
+	if x < sloupec and x >= 0 and y > -radek and y <= -0:
 		if plan[y][x] != 0:						# Je dané pole volné?
 			print("Pole je obsazené!")
 			continue
@@ -95,6 +99,6 @@ while tahy != a*b:								# Existuje volné pole?
 	else:
 		print("Neplatné pole!")
 
-if tahy == a*b:
+if tahy == sloupec*radek:
 	print("Hrací pole je plné! Konec hry.")
 	exitonclick()
