@@ -1,29 +1,36 @@
-from turtle import exitonclick, forward, left, right, circle, speed, setpos, hideturtle, pendown, penup, home, color, width
-from math import sqrt
+from tkinter import *
+import math
+
+strana = 25
 
 class Piskvorky:
-	sit = 3
-	strana = 50
-	uhlopricka = sqrt(strana**2+strana**2)
+	platno = None
+	sirka = 0
+	vyska = 0
 	plan=[]
 	tahy = 0										# Počet umístěných znaků
 
-	def __init__(self, sit, strana):
-		for y in range(sit):
+	def __init__(self,vyska,sirka):
+		self.platno = Canvas(okno,width=sirka*strana,height=vyska*strana)
+		self.platno.grid()
+		self.platno.bind("<Button-1>", self.platno_onclick)
+		self.sirka = sirka
+		self.vyska = vyska
+		for i in range(vyska):
 			self.plan.append([])
-			for x in range(sit):
-				self.plan[y].append(0)
-				for i in range(4):
-					forward(strana)
-					right(90)
-				forward(strana)
-			left(180)
-			forward(sit*strana)
-			left(90)
-			forward(strana)
-			left(90)
+			for j in range(sirka):
+				self.plan[i].append(0)
+				self.platno.create_rectangle(j * strana, i * strana,
+				(j + 1) * strana, (i + 1) * strana)
 
-	def krizek(self, x, y):
+	def platno_onclick(self,udalost):
+		pole_x = int(udalost.x/25)
+		pole_y = int(udalost.y/25)
+		self.kolecko(pole_x, pole_y)
+		self.plan[pole_x][pole_y]
+		
+
+	'''def krizek(self, x, y):
 		penup()
 		home()							# Umístění do poč. bodu a nulové rotace
 		setpos(x*self.strana, y*self.strana)
@@ -42,69 +49,69 @@ class Piskvorky:
 		pendown()
 		forward(self.uhlopricka-20)
 		penup()
+		'''
 
-	def kolecko (self,x, y):
-		penup()
-		home()
-		setpos(x*self.strana, y*self.strana)
-		right(90)
-		forward(self.strana)
-		left(90)
-		forward(self.strana/2)
-		left(90)
-		forward(5)
-		right(90)
-		width(5)
-		color("red")
-		pendown()
-		circle(self.strana/2-5)
-		penup()
+	def kolecko (self, x, y):
+		self.platno.create_oval((x * strana)+5, (y * strana)+5, ((x + 1) * strana)-5, ((y + 1) * strana)-5, outline="red")
 
 	def pocet_v_rade(self,x,y):
-		v_rade = 1
-		while self.plan[y][x] == self.plan[y-1][x]:
-			v_rade += 1
+		if x >= self.x or y <= -self.x:
+			raise IndexError("Neplatné pole!")
+		
+		maximum = - math.inf
+
+		# Kontrolování všech možných směrů {nahoru, doleva, doleva nahoru, doprava nahoru}
+		for i in [ [0, 1], [-1, 0], [-1, 1], [1, 1] ]:
+			v_rade = 1
+			j = 1
+			while self.plan[y][x] == self.plan[y + (i[1] * j)][x + (i[0] * j)]:
+				v_rade += 1
+				j += 1
+			j = 1
+			while self.plan[y][x] == self.plan[y - (i[1] * j)][x - (i[0] * j)]:
+				v_rade += 1
+				j += 1
+			if v_rade > maximum:
+				v_rade = maximum
 		return v_rade
 
 	def tah(self):
-		while self.tahy != self.sit*self.sit:								# Existuje volné pole?
-		# Počítání od 0 => "zadané pole" - 1
-		# Turtle - poč. souřadnic vlevo dole X Hráč - poč. souřadnic vlevo nahoře => -y
-			try:
-				x = int(input("Hráč " + str(self.tahy%2 + 1) + ": zadej číslo sloupce:"))-1	
-				y = -(int(input("Hráč " + str(self.tahy%2 + 1) + ": zadej číslo řádku:"))-1)
-			except ValueError:
-				print("Nebylo zadáno číslo!")
+		self.platno_onclick()
+		'''if self.plan[y][x] != 0:						# Je dané pole volné?
+			print("Pole je obsazené!")
+			return
+		elif self.tahy%2 == 0:						# Hráč 1
+			self.krizek
+			self.plan[y][x] = 1
+			self.tahy += 1
+		else:									# Hráč 2
+			self.kolecko(x, y)
+			self.plan[y][x] = 2
+			self.tahy += 1
 
-			if x < self.sit and x >= 0 and y > -self.sit and y <= -0:
-				pole = self.plan[y][x]
-				if pole != 0:						# Je dané pole volné?
-					print("Pole je obsazené!")
-					continue
-				elif self.tahy%2 == 0:						# Hráč 1
-					self.krizek(x, y)
-					pole = 1
-					self.tahy += 1
-				
-				else:									# Hráč 2
-					self.kolecko(x, y)
-					pole = 2
-					self.tahy += 1
-				
+		if self.pocet_v_rade(x,y) == 3:
+			if self.plan[y][x] == 1:
+				print("Vyhrál hráč!")
 			else:
-				print("Neplatné pole!")
+				print("Vyhrál počítač!")
+'''
 
-speed(0)
-hideturtle()
-
-
-speed("normal")
+okno = Tk()
 
 
-
-
-#if tahy == sit*sit:
+try:
+	hra = Piskvorky(3,3)
+except ValueError as v:
+	print(v)
+	exit()
+#try:
+#	while hra.tahy != hra.sit*hra.sit:								# Existuje volné pole?
+#		hra.tah()
+#except IndexError as i:
+#	print(i)
+#	exit()
+	
+#if hra.tahy == hra.sit*hra.sit:
 #	print("Hrací pole je plné! Konec hry.")
-#	exitonclick()
 
-hra = Piskvorky(3,50)
+okno.mainloop()
