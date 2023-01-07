@@ -24,10 +24,16 @@ class Piskvorky:
 				(j + 1) * strana, (i + 1) * strana)
 
 	def platno_onclick(self,udalost):
+		# Zisk souřadnic pole
 		pole_x = int(udalost.x/25)
 		pole_y = int(udalost.y/25)
 		self.kolecko(pole_x, pole_y)
-		self.plan[pole_x][pole_y]
+		self.plan[pole_x][pole_y] = 1
+		if self.pocet_v_rade(pole_x, pole_y) == 3:
+			if self.plan[pole_x][pole_y] == 1:
+				print("Vyhrál hráč!")
+			else:
+				print("Vyhrál počítač!")
 		
 
 	'''def krizek(self, x, y):
@@ -54,29 +60,34 @@ class Piskvorky:
 	def kolecko (self, x, y):
 		self.platno.create_oval((x * strana)+5, (y * strana)+5, ((x + 1) * strana)-5, ((y + 1) * strana)-5, outline="red")
 
-	def pocet_v_rade(self,x,y):
-		if x >= self.x or y <= -self.x:
-			raise IndexError("Neplatné pole!")
-		
+	def pocet_v_rade(self, pole_x, pole_y):
 		maximum = - math.inf
 
 		# Kontrolování všech možných směrů {nahoru, doleva, doleva nahoru, doprava nahoru}
 		for i in [ [0, 1], [-1, 0], [-1, 1], [1, 1] ]:
 			v_rade = 1
 			j = 1
-			while self.plan[y][x] == self.plan[y + (i[1] * j)][x + (i[0] * j)]:
+			while self.je_na_planu(pole_x + (i[0] * j), pole_y + (i[1] * j)) and self.plan[pole_x][pole_y] == self.plan[pole_x + (i[0] * j)][pole_y + (i[1] * j)]:
 				v_rade += 1
 				j += 1
 			j = 1
-			while self.plan[y][x] == self.plan[y - (i[1] * j)][x - (i[0] * j)]:
+			while self.je_na_planu(pole_x - (i[0] * j), pole_y - (i[1] * j)) and self.plan[pole_x][pole_y] == self.plan[pole_x - (i[0] * j)][pole_y - (i[1] * j)]:
 				v_rade += 1
 				j += 1
 			if v_rade > maximum:
-				v_rade = maximum
-		return v_rade
+				maximum = v_rade
+		print(maximum)
+		return maximum
+	
+	def je_na_planu(self, pole_x, pole_y):
+		if pole_x < 0 or pole_x >= len(self.plan[0]):
+			return False
+		if pole_y < 0 or pole_y >= len(self.plan):
+			return False
+		else:
+			return True
 
 	def tah(self):
-		self.platno_onclick()
 		'''if self.plan[y][x] != 0:						# Je dané pole volné?
 			print("Pole je obsazené!")
 			return
@@ -88,13 +99,9 @@ class Piskvorky:
 			self.kolecko(x, y)
 			self.plan[y][x] = 2
 			self.tahy += 1
-
-		if self.pocet_v_rade(x,y) == 3:
-			if self.plan[y][x] == 1:
-				print("Vyhrál hráč!")
-			else:
-				print("Vyhrál počítač!")
 '''
+		
+
 
 okno = Tk()
 
