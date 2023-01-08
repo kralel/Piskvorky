@@ -13,7 +13,7 @@ class Piskvorky:
 	def __init__(self,vyska,sirka):
 		self.platno = Canvas(okno,width=sirka*strana,height=vyska*strana)
 		self.platno.grid()
-		self.platno.bind("<Button-1>", self.platno_onclick)
+		self.platno.bind("<Button-1>", self.tah)
 		self.sirka = sirka
 		self.vyska = vyska
 		for i in range(vyska):
@@ -23,7 +23,7 @@ class Piskvorky:
 				self.platno.create_rectangle(j * strana, i * strana,
 				(j + 1) * strana, (i + 1) * strana)
 
-	def platno_onclick(self,udalost):
+	def tah(self,udalost):
 		# Zisk souřadnic pole
 		pole_x = int(udalost.x/strana)
 		pole_y = int(udalost.y/strana)
@@ -31,22 +31,25 @@ class Piskvorky:
 		if self.plan[pole_x][pole_y] != 0:
 			print("Pole je obsazené!")							# Je dané pole volné?
 			return
+
+		if self.tahy%2 == 0:									# Hráč 1
+			self.kolecko(pole_x, pole_y)
+			self.plan[pole_x][pole_y] = 1
 		else:
 			self.krizek(pole_x, pole_y)
-			self.tahy += 1
-			self.plan[pole_x][pole_y] = 1
-			if self.pocet_v_rade(pole_x, pole_y) == 3:
-				if self.plan[pole_x][pole_y] == 1:
-					print("Vyhrál hráč!")
-				else:
-					print("Vyhrál počítač!")
+			self.plan[pole_x][pole_y] = 2
+		self.tahy += 1
+		if self.pocet_v_rade(pole_x, pole_y) == 3:
+			if self.plan[pole_x][pole_y] == 1:
+				print("Vyhrál hráč!")
+			else:
+				print("Vyhrál počítač!")
 		if self.tahy == self.vyska * self.sirka:
 			print("Hrací pole je plné! Konec hry.")
 
 	def krizek(self, x, y):
 		self.platno.create_line((x * strana) + 5, (y * strana) + 5, ((x + 1) * strana) - 5, ((y + 1) * strana) - 5, fill="blue", width=2)
 		self.platno.create_line((x * strana) + 5, ((y + 1) * strana) - 5, ((x + 1) * strana) - 5, (y * strana) + 5, fill="blue", width=2)
-
 
 	def kolecko(self, x, y):
 		self.platno.create_oval((x * strana)+5, (y * strana)+5, ((x + 1) * strana)-5, ((y + 1) * strana)-5, outline="red", width=2)
@@ -67,7 +70,6 @@ class Piskvorky:
 				j += 1
 			if v_rade > maximum:
 				maximum = v_rade
-		print(maximum)
 		return maximum
 	
 	def je_na_planu(self, pole_x, pole_y):
@@ -77,15 +79,6 @@ class Piskvorky:
 			return False
 		else:
 			return True
-
-	def tah(self):
-		'''
-		elif self.tahy%2 == 0:						# Hráč 1
-			self.krizek
-			self.plan[y][x] = 1
-			self.tahy += 1
-'''
-		
 
 
 okno = Tk()
