@@ -25,40 +25,31 @@ class Piskvorky:
 
 	def platno_onclick(self,udalost):
 		# Zisk souřadnic pole
-		pole_x = int(udalost.x/25)
-		pole_y = int(udalost.y/25)
-		self.kolecko(pole_x, pole_y)
-		self.plan[pole_x][pole_y] = 1
-		if self.pocet_v_rade(pole_x, pole_y) == 3:
-			if self.plan[pole_x][pole_y] == 1:
-				print("Vyhrál hráč!")
-			else:
-				print("Vyhrál počítač!")
-		
+		pole_x = int(udalost.x/strana)
+		pole_y = int(udalost.y/strana)
 
-	'''def krizek(self, x, y):
-		penup()
-		home()							# Umístění do poč. bodu a nulové rotace
-		setpos(x*self.strana, y*self.strana)
-		right(45)
-		forward(10)
-		width(5)
-		color("blue")
-		pendown()
-		forward(self.uhlopricka-20)
-		penup()
-		forward(10)
-		right(135)
-		forward(self.strana)
-		right(135)
-		forward(10)
-		pendown()
-		forward(self.uhlopricka-20)
-		penup()
-		'''
+		if self.plan[pole_x][pole_y] != 0:
+			print("Pole je obsazené!")							# Je dané pole volné?
+			return
+		else:
+			self.krizek(pole_x, pole_y)
+			self.tahy += 1
+			self.plan[pole_x][pole_y] = 1
+			if self.pocet_v_rade(pole_x, pole_y) == 3:
+				if self.plan[pole_x][pole_y] == 1:
+					print("Vyhrál hráč!")
+				else:
+					print("Vyhrál počítač!")
+		if self.tahy == self.vyska * self.sirka:
+			print("Hrací pole je plné! Konec hry.")
 
-	def kolecko (self, x, y):
-		self.platno.create_oval((x * strana)+5, (y * strana)+5, ((x + 1) * strana)-5, ((y + 1) * strana)-5, outline="red")
+	def krizek(self, x, y):
+		self.platno.create_line((x * strana) + 5, (y * strana) + 5, ((x + 1) * strana) - 5, ((y + 1) * strana) - 5, fill="blue", width=2)
+		self.platno.create_line((x * strana) + 5, ((y + 1) * strana) - 5, ((x + 1) * strana) - 5, (y * strana) + 5, fill="blue", width=2)
+
+
+	def kolecko(self, x, y):
+		self.platno.create_oval((x * strana)+5, (y * strana)+5, ((x + 1) * strana)-5, ((y + 1) * strana)-5, outline="red", width=2)
 
 	def pocet_v_rade(self, pole_x, pole_y):
 		maximum = - math.inf
@@ -88,16 +79,10 @@ class Piskvorky:
 			return True
 
 	def tah(self):
-		'''if self.plan[y][x] != 0:						# Je dané pole volné?
-			print("Pole je obsazené!")
-			return
+		'''
 		elif self.tahy%2 == 0:						# Hráč 1
 			self.krizek
 			self.plan[y][x] = 1
-			self.tahy += 1
-		else:									# Hráč 2
-			self.kolecko(x, y)
-			self.plan[y][x] = 2
 			self.tahy += 1
 '''
 		
@@ -111,14 +96,5 @@ try:
 except ValueError as v:
 	print(v)
 	exit()
-#try:
-#	while hra.tahy != hra.sit*hra.sit:								# Existuje volné pole?
-#		hra.tah()
-#except IndexError as i:
-#	print(i)
-#	exit()
-	
-#if hra.tahy == hra.sit*hra.sit:
-#	print("Hrací pole je plné! Konec hry.")
 
 okno.mainloop()
