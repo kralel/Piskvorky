@@ -1,7 +1,13 @@
 from tkinter import *
 import math
+from enum import IntEnum
 
 strana = 25
+
+class Pole(IntEnum):
+	volne_pole = 0
+	hrac = -1
+	pocitac = 1
 
 class Piskvorky:
 	platno = None
@@ -10,9 +16,6 @@ class Piskvorky:
 	plan=[]
 	#: jsou tahy potřeba?
 	tahy = 0													# Počet umístěných znaků
-	#TODO: použít enum pro hráče, počítač a volné pole 
-	hrac = -1
-	pocitac = 1
 
 	def __init__(self, okno, vyska, sirka):
 		self.platno = Canvas(okno, width = sirka * strana, height = vyska * strana)
@@ -25,7 +28,7 @@ class Piskvorky:
 			self.plan.append([])
 			for y in range(vyska):
 				# Řádek
-				self.plan[x].append(0)
+				self.plan[x].append(Pole.volne_pole)
 				self.platno.create_rectangle(x * strana, y * strana,
 					(x + 1) * strana, (y + 1) * strana)
 
@@ -33,27 +36,27 @@ class Piskvorky:
 		# Zisk souřadnic pole
 		pole_x = int(udalost.x / strana)
 		pole_y = int(udalost.y / strana)
-		if self.plan[pole_x][pole_y] != 0:
-			print("Pole je obsazené!")							# Je dané pole volné?
+		if self.plan[pole_x][pole_y] != Pole.volne_pole:
+			print("Pole je obsazené!")
 		else:
 			self.umisteni(pole_x, pole_y)
 			# Další tah
-			ohodnoceni = self.minimax(3, self.plan, self.pocitac)
+			ohodnoceni = self.minimax(3, self.plan, Pole.pocitac)
 			self.umisteni(ohodnoceni[0], ohodnoceni[1])
 
 	def umisteni(self, pole_x, pole_y):
 		#TODO: použít proměnnou hráč_na_tahu místo tahy?
 		if self.tahy % 2 == 0:									# Hráč
 			self.kolecko(pole_x, pole_y)
-			self.plan[pole_x][pole_y] = self.hrac
+			self.plan[pole_x][pole_y] = Pole.hrac
 		else:													# Počítač
 			self.krizek(pole_x, pole_y)
-			self.plan[pole_x][pole_y] = self.pocitac
+			self.plan[pole_x][pole_y] = Pole.pocitac
 		self.tahy += 1
 
 		#TODO: parametrizovat počet potřebný pro vítězství
 		if self.pocet_v_rade(pole_x, pole_y, self.plan) == 3:
-			if self.plan[pole_x][pole_y] == self.hrac:
+			if self.plan[pole_x][pole_y] == Pole.hrac:
 				print("Vyhrál hráč!")
 			else:
 				print("Vyhrál počítač!")
@@ -69,18 +72,17 @@ class Piskvorky:
 		self.platno.create_oval((x * strana) + 5, (y * strana) + 5, ((x + 1) * strana) - 5, ((y + 1) * strana) - 5, outline = "red", width = 2)
 
 	def minimax(self, hloubka, plan, hrac_na_tahu):		
-		if hrac_na_tahu == self.hrac:							# Hráč
+		if hrac_na_tahu == Pole.hrac:							# Hráč
 			nejlepsi = [-1, -1, math.inf]
 		else:													# Počítač
 			nejlepsi = [-1, -1, -math.inf]
 		
-		#TODO: přidat kontrolu i dalších konců hry (nejen remízy)
 		if self.tahy == self.vyska * self.sirka:
 			return [-1, -1, 0]
 
 		for x in range(self.sirka):
 			for y in range(self.vyska):
-				if plan[x][y] == 0:
+				if plan[x][y] == Pole.volne_pole:
 					# Dočasné umístění
 					plan[x][y] = hrac_na_tahu
 					self.tahy += 1
@@ -89,10 +91,10 @@ class Piskvorky:
 					else:
 						ohodnoceni = [x, y, self.minimax(hloubka - 1, plan, -hrac_na_tahu)[2]]
 					# Odebrání
-					plan[x][y] = 0
+					plan[x][y] = Pole.volne_pole
 					self.tahy -= 1
 
-					if hrac_na_tahu == self.hrac:
+					if hrac_na_tahu == Pole.hrac:
 						if ohodnoceni[2] < nejlepsi[2]:
 							nejlepsi = ohodnoceni
 					else:
@@ -101,7 +103,7 @@ class Piskvorky:
 
 				# TODO: parametrizovat počet potřebný pro výhru
 				elif self.pocet_v_rade(x, y, plan) == 3:
-					if plan[x][y] == self.hrac:
+					if plan[x][y] == Pole.hrac:
 						return [-1, -1, -math.inf]
 					else:
 						return [-1, -1, math.inf]						
@@ -138,12 +140,12 @@ class Piskvorky:
 
 		for x in range(self.sirka):
 			for y in range(self.vyska):
-				if plan[x][y] == self.hrac:
+				if plan[x][y] == Pole.hrac:
 					hodnota = self.pocet_v_rade(x, y, plan)
 					if hodnota > hrac_max:
 						hrac_max = hodnota
 					
-				elif plan[x][y] == self.pocitac:
+				elif plan[x][y] == Pole.pocitac:
 					hodnota = self.pocet_v_rade(x, y, plan)
 					if hodnota > pocitac_max:
 						pocitac_max = hodnota
