@@ -2,6 +2,7 @@ from tkinter import *
 import math
 from enum import IntEnum
 from tkinter import messagebox
+import random
 
 strana = 25
 
@@ -94,8 +95,13 @@ class Piskvorky:
 		if self.tahy == self.vyska * self.sirka:
 			return [-1, -1, 0]
 
-		for x in range(self.sirka):
-			for y in range(self.vyska):
+		# Náhodný výběr pořadí polí
+		posloupnost_x = list(range(self.sirka))
+		random.shuffle(posloupnost_x)
+		posloupnost_y = list(range(self.vyska))
+		random.shuffle(posloupnost_y)
+		for x in posloupnost_x:
+			for y in posloupnost_y:
 				if plan[x][y] == Pole.volne_pole:
 					# Dočasné umístění
 					plan[x][y] = hrac_na_tahu
@@ -109,6 +115,7 @@ class Piskvorky:
 					self.tahy -= 1
 
 					if hrac_na_tahu == Pole.hrac:
+						# Přepsání starší hodnoty - jinak může zůstat počáteční hodnota [-1, -1, -math.inf]
 						if ohodnoceni[2] <= nejlepsi[2]:
 							nejlepsi = ohodnoceni
 					else:
