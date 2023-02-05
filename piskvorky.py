@@ -1,9 +1,8 @@
 from tkinter import *
+from tkinter import messagebox
 import math
 from enum import IntEnum
-from tkinter import messagebox
 import random
-import time
 
 strana = 25
 
