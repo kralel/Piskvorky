@@ -1,6 +1,7 @@
 from tkinter import *
 import math
 from enum import IntEnum
+from tkinter import messagebox
 
 strana = 25
 
@@ -14,17 +15,19 @@ class Piskvorky:
 	sirka = 0
 	vyska = 0
 	pocet_vyhra = 0
+	obtiznost = 0
 	plan=[]
-	#TODO: jsou tahy potřeba?
 	tahy = 0													# Počet umístěných znaků
 
-	def __init__(self, okno, vyska, sirka, pocet_vyhra):
+	def __init__(self, okno, vyska, sirka, pocet_vyhra, obtiznost):
 		if vyska < 0:
 			raise ValueError("Výška je záporná!")
 		elif sirka < 0:
 			raise ValueError("Šířka je záporná!")
 		elif pocet_vyhra < 0:
 			raise ValueError("Počet potřebných kamenů na výhru je záporný!")
+		elif obtiznost < 0:
+			raise ValueError("Obtížnost je záporná!")
 		
 		self.platno = Canvas(okno, width = sirka * strana, height = vyska * strana)
 		self.platno.grid()
@@ -32,6 +35,7 @@ class Piskvorky:
 		self.sirka = sirka
 		self.vyska = vyska
 		self.pocet_vyhra = pocet_vyhra
+		self.obtiznost = obtiznost
 		for x in range(sirka):
 			# Sloupec
 			self.plan.append([])
@@ -50,11 +54,10 @@ class Piskvorky:
 		else:
 			self.umisteni(pole_x, pole_y)
 			# Další tah
-			ohodnoceni = self.minimax(3, self.plan, Pole.pocitac)
+			ohodnoceni = self.minimax(self.obtiznost, self.plan, Pole.pocitac)
 			self.umisteni(ohodnoceni[0], ohodnoceni[1])
 
 	def umisteni(self, pole_x, pole_y):
-		#TODO: použít proměnnou hráč_na_tahu místo tahy?
 		if self.tahy % 2 == 0:									# Hráč
 			self.kolecko(pole_x, pole_y)
 			self.plan[pole_x][pole_y] = Pole.hrac
@@ -65,12 +68,15 @@ class Piskvorky:
 
 		if self.pocet_v_rade(pole_x, pole_y, self.plan) == self.pocet_vyhra:
 			if self.plan[pole_x][pole_y] == Pole.hrac:
-				print("Vyhrál hráč!")
+				if messagebox.showinfo(title="Konec hry", message="Vyhráli jste!"):
+					exit()
 			else:
-				print("Vyhrál počítač!")
+				if messagebox.showinfo(title="Konec hry", message="Prohráli jste!"):
+					exit()
 				
-		if self.tahy == self.vyska * self.sirka:
-			print("Hrací pole je plné! Konec hry.")
+		elif self.tahy == self.vyska * self.sirka:
+			if messagebox.showinfo(title="Konec hry", message="Remíza!"):
+				exit()
 
 	def krizek(self, x, y):
 		self.platno.create_line((x * strana) + 5, (y * strana) + 5, ((x + 1) * strana) - 5, ((y + 1) * strana) - 5, fill="blue", width=2)
@@ -103,17 +109,17 @@ class Piskvorky:
 					self.tahy -= 1
 
 					if hrac_na_tahu == Pole.hrac:
-						if ohodnoceni[2] < nejlepsi[2]:
+						if ohodnoceni[2] <= nejlepsi[2]:
 							nejlepsi = ohodnoceni
 					else:
-						if ohodnoceni[2] > nejlepsi[2]:
+						if ohodnoceni[2] >= nejlepsi[2]:
 							nejlepsi = ohodnoceni
 
 				elif self.pocet_v_rade(x, y, plan) == self.pocet_vyhra:
 					if plan[x][y] == Pole.hrac:
 						return [-1, -1, -math.inf]
 					else:
-						return [-1, -1, math.inf]						
+						return [-1, -1, math.inf]
 
 		return nejlepsi
 
@@ -171,6 +177,6 @@ class Piskvorky:
 okno = Tk()
 
 
-hra = Piskvorky(okno, 3, 3, 3)
+hra = Piskvorky(okno, 3, 3, 3, 2)
 
 okno.mainloop()
