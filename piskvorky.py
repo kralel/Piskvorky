@@ -33,16 +33,15 @@ class Piskvorky:
 		# Zisk souřadnic pole
 		pole_x = int(udalost.x / strana)
 		pole_y = int(udalost.y / strana)
-		self.umisteni(pole_x, pole_y)
-		# Další tah
-		ohodnoceni = self.minimax(3, self.plan, self.pocitac)
-		self.umisteni(ohodnoceni[0], ohodnoceni[1])
+		if self.plan[pole_x][pole_y] != 0:
+			print("Pole je obsazené!")							# Je dané pole volné?
+		else:
+			self.umisteni(pole_x, pole_y)
+			# Další tah
+			ohodnoceni = self.minimax(3, self.plan, self.pocitac)
+			self.umisteni(ohodnoceni[0], ohodnoceni[1])
 
 	def umisteni(self, pole_x, pole_y):
-		if self.plan[pole_x][pole_y] != 0:						# Je dané pole volné?
-			print("Pole je obsazené!")
-			return
-
 		#TODO: použít proměnnou hráč_na_tahu místo tahy?
 		if self.tahy % 2 == 0:									# Hráč
 			self.kolecko(pole_x, pole_y)
