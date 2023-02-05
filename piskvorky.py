@@ -3,6 +3,7 @@ import math
 from enum import IntEnum
 from tkinter import messagebox
 import random
+import time
 
 strana = 25
 
@@ -55,7 +56,7 @@ class Piskvorky:
 		else:
 			self.umisteni(pole_x, pole_y)
 			# Další tah
-			ohodnoceni = self.minimax(self.obtiznost, self.plan, Pole.pocitac)
+			ohodnoceni = self.minimax(self.obtiznost, self.plan, Pole.pocitac, -math.inf, math.inf)
 			self.umisteni(ohodnoceni[0], ohodnoceni[1])
 
 	def umisteni(self, pole_x, pole_y):
@@ -86,7 +87,7 @@ class Piskvorky:
 	def kolecko(self, x, y):
 		self.platno.create_oval((x * strana) + 5, (y * strana) + 5, ((x + 1) * strana) - 5, ((y + 1) * strana) - 5, outline = "red", width = 2)
 
-	def minimax(self, hloubka, plan, hrac_na_tahu):		
+	def minimax(self, hloubka, plan, hrac_na_tahu, alfa, beta):		
 		if hrac_na_tahu == Pole.hrac:							# Hráč
 			nejlepsi = [-1, -1, math.inf]
 		else:													# Počítač
@@ -109,7 +110,7 @@ class Piskvorky:
 					if hloubka == 0:
 						ohodnoceni = [x, y, self.ohodnoceni_planu(plan)]
 					else:
-						ohodnoceni = [x, y, self.minimax(hloubka - 1, plan, -hrac_na_tahu)[2]]
+						ohodnoceni = [x, y, self.minimax(hloubka - 1, plan, -hrac_na_tahu, alfa, beta)[2]]
 					# Odebrání
 					plan[x][y] = Pole.volne_pole
 					self.tahy -= 1
@@ -118,9 +119,17 @@ class Piskvorky:
 						# Přepsání starší hodnoty - jinak může zůstat počáteční hodnota [-1, -1, -math.inf]
 						if ohodnoceni[2] <= nejlepsi[2]:
 							nejlepsi = ohodnoceni
+
+						if nejlepsi[2] < alfa:
+							return nejlepsi
+						beta = min(beta, nejlepsi[2])
 					else:
 						if ohodnoceni[2] >= nejlepsi[2]:
 							nejlepsi = ohodnoceni
+
+						if nejlepsi[2] > beta:
+							return nejlepsi
+						alfa = max(alfa, nejlepsi[2])
 
 				elif self.pocet_v_rade(x, y, plan) == self.pocet_vyhra:
 					if plan[x][y] == Pole.hrac:
