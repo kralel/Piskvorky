@@ -13,16 +13,25 @@ class Piskvorky:
 	platno = None
 	sirka = 0
 	vyska = 0
+	pocet_vyhra = 0
 	plan=[]
-	#: jsou tahy potřeba?
+	#TODO: jsou tahy potřeba?
 	tahy = 0													# Počet umístěných znaků
 
-	def __init__(self, okno, vyska, sirka):
+	def __init__(self, okno, vyska, sirka, pocet_vyhra):
+		if vyska < 0:
+			raise ValueError("Výška je záporná!")
+		elif sirka < 0:
+			raise ValueError("Šířka je záporná!")
+		elif pocet_vyhra < 0:
+			raise ValueError("Počet potřebných kamenů na výhru je záporný!")
+		
 		self.platno = Canvas(okno, width = sirka * strana, height = vyska * strana)
 		self.platno.grid()
 		self.platno.bind("<Button-1>", self.tah)
 		self.sirka = sirka
 		self.vyska = vyska
+		self.pocet_vyhra = pocet_vyhra
 		for x in range(sirka):
 			# Sloupec
 			self.plan.append([])
@@ -54,8 +63,7 @@ class Piskvorky:
 			self.plan[pole_x][pole_y] = Pole.pocitac
 		self.tahy += 1
 
-		#TODO: parametrizovat počet potřebný pro vítězství
-		if self.pocet_v_rade(pole_x, pole_y, self.plan) == 3:
+		if self.pocet_v_rade(pole_x, pole_y, self.plan) == self.pocet_vyhra:
 			if self.plan[pole_x][pole_y] == Pole.hrac:
 				print("Vyhrál hráč!")
 			else:
@@ -101,8 +109,7 @@ class Piskvorky:
 						if ohodnoceni[2] > nejlepsi[2]:
 							nejlepsi = ohodnoceni
 
-				# TODO: parametrizovat počet potřebný pro výhru
-				elif self.pocet_v_rade(x, y, plan) == 3:
+				elif self.pocet_v_rade(x, y, plan) == self.pocet_vyhra:
 					if plan[x][y] == Pole.hrac:
 						return [-1, -1, -math.inf]
 					else:
@@ -164,7 +171,6 @@ class Piskvorky:
 okno = Tk()
 
 
-#TODO: pocet kamenu potrebnych pro vitezstvi jako parametr
-hra = Piskvorky(okno, 3, 3)
+hra = Piskvorky(okno, 3, 3, 3)
 
 okno.mainloop()
