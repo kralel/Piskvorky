@@ -20,15 +20,19 @@ class Piskvorky:
 	plan=[]
 	tahy = 0													# Počet umístěných znaků
 
-	def __init__(self, okno, vyska, sirka, pocet_vyhra, obtiznost):
-		if vyska < 0:
-			raise ValueError("Výška je záporná!")
-		elif sirka < 0:
-			raise ValueError("Šířka je záporná!")
-		elif pocet_vyhra < 0:
-			raise ValueError("Počet potřebných kamenů na výhru je záporný!")
-		elif obtiznost < 0:
-			raise ValueError("Obtížnost je záporná!")
+	def __init__(self, okno, vyska, sirka, pocet_vyhra, obtiznost):		
+		try:
+			if vyska < 0:
+				raise ValueError("Výška je záporná!")
+			elif sirka < 0:
+				raise ValueError("Šířka je záporná!")
+			elif pocet_vyhra < 0:
+				raise ValueError("Počet potřebných kamenů na výhru je záporný!")
+			elif obtiznost < 0:
+				raise ValueError("Obtížnost je záporná!")
+		except TypeError:
+			print("Vstupní parametry nejsou číselné!")
+			exit()
 		
 		self.platno = Canvas(okno, width = sirka * strana, height = vyska * strana)
 		self.platno.grid()
@@ -192,6 +196,6 @@ class Piskvorky:
 okno = Tk()
 
 
-hra = Piskvorky(okno, 3, 3, 3, 2)
+hra = Piskvorky(okno, 'ahoj', 3, 3, 2)
 
 okno.mainloop()
