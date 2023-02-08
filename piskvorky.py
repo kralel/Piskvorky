@@ -17,7 +17,7 @@ class Piskvorky:
 	vyska = 0
 	pocet_vyhra = 0
 	obtiznost = 0
-	plan=[]
+	plan = []
 	tahy = 0													# Počet umístěných znaků
 
 	def __init__(self, okno, vyska, sirka, pocet_vyhra, obtiznost):		
@@ -196,6 +196,6 @@ class Piskvorky:
 okno = Tk()
 
 
-hra = Piskvorky(okno, 'ahoj', 3, 3, 2)
+hra = Piskvorky(okno, 3, 3, 3, 2)
 
 okno.mainloop()
