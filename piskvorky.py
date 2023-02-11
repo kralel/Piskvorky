@@ -123,6 +123,10 @@ class Tic_tac_toe:
 		
 		if self.moves == self.height * self.width:				# Draw
 			return [-1, -1, 0]
+		
+		# Evaluation of board
+		best_comp = self.in_row(board, Field.computer)
+		best_human = self.in_row(board, Field.human)
 
 		# Random selection of field order
 		seq_x = list(range(self.width))
@@ -136,7 +140,14 @@ class Tic_tac_toe:
 					board[x][y] = player_on_move
 					self.moves += 1
 					if depth == 0:
-						evaluation = [x, y, self.evaluate_board(board)]
+						if player_on_move == Field.computer:
+							evaluation = [x, y, self.no_in_row(x, y, board)]
+							if best_comp > evaluation[2]:
+								evaluation[2] = best_comp
+						else:
+							evaluation = [x, y, -self.no_in_row(x, y, board)]
+							if -best_human < evaluation[2]:
+								evaluation[2] = -best_human
 					else:
 						evaluation = [x, y, self.minimax(depth - 1, board, -player_on_move, alpha, beta)[2]]
 					# Remove
@@ -176,6 +187,7 @@ class Tic_tac_toe:
 		board: game board
 		return: maximum number of stones in a row
 		'''
+		# The smallest starting value
 		maximum = -math.inf
 
 		# Check all possible directions {down, left, left down, right down}
@@ -199,29 +211,24 @@ class Tic_tac_toe:
 
 		return maximum
 
-	def evaluate_board(self, board):
+	def in_row(self, board, player):
 		'''
-		Evaluates each field on the game board according to the number of stones in a row for each player
+		Evaluates each field on the game board according to the number of stones in a row for player
 		board: game board
-		return: difference in the number of stones in a row between players
+		player: player for which is calculates stones in a row
+		return: maximum of stones in a row
 		'''
-		# Smallest starting value
-		comp_max = -math.inf
-		human_max = -math.inf
+		# The smallest starting value
+		max = 0
 
 		for x in range(self.width):
 			for y in range(self.height):
-				if board[x][y] == Field.human:
+				if board[x][y] == player:
 					value = self.no_in_row(x, y, board)
-					if value > human_max:
-						human_max = value
-					
-				elif board[x][y] == Field.computer:
-					value = self.no_in_row(x, y, board)
-					if value > comp_max:
-						comp_max = value
+					if value > max:
+						max = value
 
-		return comp_max - human_max
+		return max
 
 	def on_board(self, field_x, field_y):
 		'''
