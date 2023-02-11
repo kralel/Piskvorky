@@ -4,243 +4,243 @@ import math
 from enum import IntEnum
 import random
 
-strana = 25
+side = 25
 
-class Pole(IntEnum):
-	volne_pole = 0
-	hrac = -1
-	pocitac = 1
+class Field(IntEnum):
+	empty_field = 0
+	human = -1
+	computer = 1
 
-class Piskvorky:
-	platno = None
-	sirka = 0
-	vyska = 0
-	pocet_vyhra = 0
-	obtiznost = 0
-	plan = []
-	tahy = 0													# Počet umístěných znaků
+class Tic_tac_toe:
+	canvas = None
+	width = 0
+	height = 0
+	no_win = 0
+	difficulty = 0
+	board = []
+	moves = 0													# Number of placed stones
 
-	def __init__(self, okno, vyska, sirka, pocet_vyhra, obtiznost):		
+	def __init__(self, window, height, width, no_win, difficulty):		
 		try:
-			if vyska < 0:
+			if height < 0:
 				raise ValueError("Výška je záporná!")
-			elif sirka < 0:
+			elif width < 0:
 				raise ValueError("Šířka je záporná!")
-			elif pocet_vyhra < 0:
+			elif no_win < 0:
 				raise ValueError("Počet potřebných kamenů na výhru je záporný!")
-			elif obtiznost < 0:
+			elif difficulty < 0:
 				raise ValueError("Obtížnost je záporná!")
 		except TypeError:
 			print("Vstupní parametry nejsou číselné!")
 			exit()
 		
-		self.platno = Canvas(okno, width = sirka * strana, height = vyska * strana)
-		self.platno.grid()
-		self.platno.bind("<Button-1>", self.tah)				# Po kliknutí zavolá funkci tah
-		self.sirka = sirka
-		self.vyska = vyska
-		self.pocet_vyhra = pocet_vyhra
-		self.obtiznost = obtiznost
-		for x in range(sirka):
-			# Sloupec
-			self.plan.append([])
-			for y in range(vyska):
-				# Řádek
-				self.plan[x].append(Pole.volne_pole)
-				self.platno.create_rectangle(x * strana, y * strana,
-					(x + 1) * strana, (y + 1) * strana)
+		self.canvas = Canvas(window, width = width * side, height = height * side)
+		self.canvas.grid()
+		self.canvas.bind("<Button-1>", self.move)				# Call function move on left mouse button click
+		self.width = width
+		self.height = height
+		self.no_win = no_win
+		self.difficulty = difficulty
+		for x in range(width):
+			# Column
+			self.board.append([])
+			for y in range(height):
+				# Row
+				self.board[x].append(Field.empty_field)
+				self.canvas.create_rectangle(x * side, y * side,
+					(x + 1) * side, (y + 1) * side)
 
-	def tah(self, udalost):
-		# Zisk souřadnic pole
-		pole_x = int(udalost.x / strana)
-		pole_y = int(udalost.y / strana)
-		if self.plan[pole_x][pole_y] != Pole.volne_pole:
+	def move(self, action):
+		# Get game coordinates from click coordinates
+		field_x = int(action.x / side)
+		field_y = int(action.y / side)
+		if self.board[field_x][field_y] != Field.empty_field:
 			print("Pole je obsazené!")
 		else:
-			self.umisteni(pole_x, pole_y)
-			# Další tah
-			ohodnoceni = self.minimax(self.obtiznost, self.plan, Pole.pocitac, -math.inf, math.inf)
-			self.umisteni(ohodnoceni[0], ohodnoceni[1])
+			self.placement(field_x, field_y)
+			# Next move
+			evaluation = self.minimax(self.difficulty, self.board, Field.computer, -math.inf, math.inf)
+			self.placement(evaluation[0], evaluation[1])
 
-	def umisteni(self, pole_x, pole_y):
+	def placement(self, field_x, field_y):
 		'''
-		Umístění kamene na hrací plán na dané souřadnice
-		pole_x: x-souřadnice pole
-		pole_y: y-souřadnice pole
+		Places stone on the game board at given coordinates
+		field_x: x-coordinate of the field
+		field_y: y-scoordinate of the field
 		'''
-		if self.tahy % 2 == 0:									# Hráč
-			self.kolecko(pole_x, pole_y)
-			self.plan[pole_x][pole_y] = Pole.hrac
-		else:													# Počítač
-			self.krizek(pole_x, pole_y)
-			self.plan[pole_x][pole_y] = Pole.pocitac
-		self.tahy += 1
+		if self.moves % 2 == 0:									# Human
+			self.draw_circle(field_x, field_y)
+			self.board[field_x][field_y] = Field.human
+		else:													# Computer
+			self.draw_cross(field_x, field_y)
+			self.board[field_x][field_y] = Field.computer
+		self.moves += 1
 
-		if self.pocet_v_rade(pole_x, pole_y, self.plan) == self.pocet_vyhra:
-			if self.plan[pole_x][pole_y] == Pole.hrac:
+		if self.no_in_row(field_x, field_y, self.board) == self.no_win:
+			if self.board[field_x][field_y] == Field.human:
 				if messagebox.showinfo(title="Konec hry", message="Vyhráli jste!"):
 					exit()
 			else:
 				if messagebox.showinfo(title="Konec hry", message="Prohráli jste!"):
 					exit()
 				
-		elif self.tahy == self.vyska * self.sirka:				# Zaplněný plán - remíza
+		elif self.moves == self.height * self.width:				# Full board - draw
 			if messagebox.showinfo(title="Konec hry", message="Remíza!"):
 				exit()
 
-	def krizek(self, x, y):
+	def draw_cross(self, x, y):
 		'''
-		Nakreslení křížku do daného pole
-		x: x-souřadnice pole
-		y: y-souřadnice pole
+		Draws cross at given field
+		x: x-coordinate of the field
+		y: y-coordinate of the field
 		'''
-		self.platno.create_line((x * strana) + 5, (y * strana) + 5, ((x + 1) * strana) - 5, ((y + 1) * strana) - 5, fill="blue", width=2)
-		self.platno.create_line((x * strana) + 5, ((y + 1) * strana) - 5, ((x + 1) * strana) - 5, (y * strana) + 5, fill="blue", width=2)
+		self.canvas.create_line((x * side) + 5, (y * side) + 5, ((x + 1) * side) - 5, ((y + 1) * side) - 5, fill="blue", width=2)
+		self.canvas.create_line((x * side) + 5, ((y + 1) * side) - 5, ((x + 1) * side) - 5, (y * side) + 5, fill="blue", width=2)
 
-	def kolecko(self, x, y):
+	def draw_circle(self, x, y):
 		'''
-		Nakreslení kolečka do daného pole
-		x: x-souřadnice pole
-		y: y-souřadnice pole
+		Draws circle at given field
+		x: x-coordinate of the field
+		y: y-coordinate of the field
 		'''
-		self.platno.create_oval((x * strana) + 5, (y * strana) + 5, ((x + 1) * strana) - 5, ((y + 1) * strana) - 5, outline = "red", width = 2)
+		self.canvas.create_oval((x * side) + 5, (y * side) + 5, ((x + 1) * side) - 5, ((y + 1) * side) - 5, outline = "red", width = 2)
 
-	def minimax(self, hloubka, plan, hrac_na_tahu, alfa, beta):
+	def minimax(self, depth, board, player_on_move, alpha, beta):
 		'''
-		Vybere nejvýhodnější pole pro umístění kamene
-		hloubka: hloubka propočtu, obtížnost
-		plan: hrací plán
-		hrac_na_tahu: hráč na tahu, pro kterého byla funkce volána
-		alfa: minimální možné skóre maximalizujícího hráče
-		beta: maximální možné skóre minimalizujícího hráče
-		return: trojice [x-souřadnice, y-souřadnice, ohodnocení plánu] nejvýhodnějšího pole
+		Selects the best field to place stone
+		depth: difficulty
+		board: game board
+		player_on_move: player on turn for which the function was called
+		alpha: minimum score of maximizing player
+		beta: maximum score of minimizing player
+		return: trinity [x-coordinate, y-coordinate, evaluate of board] of the best field
 		'''
-		# Počáteční hodnoty
-		if hrac_na_tahu == Pole.hrac:							# Hráč
-			nejlepsi = [-1, -1, math.inf]
-		else:													# Počítač
-			nejlepsi = [-1, -1, -math.inf]
+		# Starting values
+		if player_on_move == Field.human:						# Human
+			best = [-1, -1, math.inf]
+		else:													# Computer
+			best = [-1, -1, -math.inf]
 		
-		if self.tahy == self.vyska * self.sirka:				# Remíza
+		if self.moves == self.height * self.width:				# Draw
 			return [-1, -1, 0]
 
-		# Náhodný výběr pořadí polí
-		posloupnost_x = list(range(self.sirka))
-		random.shuffle(posloupnost_x)
-		posloupnost_y = list(range(self.vyska))
-		random.shuffle(posloupnost_y)
-		for x in posloupnost_x:
-			for y in posloupnost_y:
-				if plan[x][y] == Pole.volne_pole:
-					# Dočasné umístění
-					plan[x][y] = hrac_na_tahu
-					self.tahy += 1
-					if hloubka == 0:
-						ohodnoceni = [x, y, self.ohodnoceni_planu(plan)]
+		# Random selection of field order
+		seq_x = list(range(self.width))
+		random.shuffle(seq_x)
+		seq_y = list(range(self.height))
+		random.shuffle(seq_y)
+		for x in seq_x:
+			for y in seq_y:
+				if board[x][y] == Field.empty_field:
+					# Temporary placement
+					board[x][y] = player_on_move
+					self.moves += 1
+					if depth == 0:
+						evaluation = [x, y, self.evaluate_board(board)]
 					else:
-						ohodnoceni = [x, y, self.minimax(hloubka - 1, plan, -hrac_na_tahu, alfa, beta)[2]]
-					# Odebrání
-					plan[x][y] = Pole.volne_pole
-					self.tahy -= 1
+						evaluation = [x, y, self.minimax(depth - 1, board, -player_on_move, alpha, beta)[2]]
+					# Remove
+					board[x][y] = Field.empty_field
+					self.moves -= 1
 
-					if hrac_na_tahu == Pole.hrac:
-						# Přepsání starší hodnoty - jinak může zůstat počáteční hodnota [-1, -1, math.inf]
-						if ohodnoceni[2] <= nejlepsi[2]:
-							nejlepsi = ohodnoceni
+					if player_on_move == Field.human:
+						# Overwrite older value - else starting value may remain [-1, -1, math.inf]
+						if evaluation[2] <= best[2]:
+							best = evaluation
 
-						if nejlepsi[2] < alfa:
-							return nejlepsi
-						beta = min(beta, nejlepsi[2])
+						if best[2] < alpha:
+							return best
+						beta = min(beta, best[2])
 					else:
-						# Přepsání starší hodnoty - jinak může zůstat počáteční hodnota [-1, -1, -math.inf]
-						if ohodnoceni[2] >= nejlepsi[2]:
-							nejlepsi = ohodnoceni
+						# Overwrite older value - else starting value may remain [-1, -1, -math.inf]
+						if evaluation[2] >= best[2]:
+							best = evaluation
 
-						if nejlepsi[2] > beta:
-							return nejlepsi
-						alfa = max(alfa, nejlepsi[2])
+						if best[2] > beta:
+							return best
+						alpha = max(alpha, best[2])
 
-				elif self.pocet_v_rade(x, y, plan) == self.pocet_vyhra:
-					if plan[x][y] == Pole.hrac:
+				elif self.no_in_row(x, y, board) == self.no_win:
+					if board[x][y] == Field.human:
 						return [-1, -1, -math.inf]
 					else:
 						return [-1, -1, math.inf]
 
-		return nejlepsi
+		return best
 
-	def pocet_v_rade(self, pole_x, pole_y, plan):
+	def no_in_row(self, field_x, field_y, board):
 		'''
-		Vypočítání počtu kamenů v řadě na hracím plánu pro umisťovaný kámen
-		pole_x: x-souřadnice pole
-		pole_y: y-souřadnice pole
-		plan: hrací plán
-		return: maximální počet kamenů v řadě
+		Calculates number of stones in a row on the game board for placed stone
+		field_x: x-coordinate of the field
+		field_y: y-coordinate of the field
+		board: game board
+		return: maximum number of stones in a row
 		'''
 		maximum = -math.inf
 
-		# Kontrolování všech možných směrů {dolu, doleva, doleva dolu, doprava dolu}
+		# Check all possible directions {down, left, left down, right down}
 		for i in [ [0, 1], [-1, 0], [-1, 1], [1, 1] ]:
-			v_rade = 1
+			in_row = 1
 
 			j = 1
-			while self.je_na_planu(pole_x + (i[0] * j), pole_y + (i[1] * j)) and \
-					plan[pole_x][pole_y] == plan[pole_x + (i[0] * j)][pole_y + (i[1] * j)]:
-				v_rade += 1
+			while self.on_board(field_x + (i[0] * j), field_y + (i[1] * j)) and \
+					board[field_x][field_y] == board[field_x + (i[0] * j)][field_y + (i[1] * j)]:
+				in_row += 1
 				j += 1
 
 			j = 1
-			while self.je_na_planu(pole_x - (i[0] * j), pole_y - (i[1] * j)) and \
-					plan[pole_x][pole_y] == plan[pole_x - (i[0] * j)][pole_y - (i[1] * j)]:
-				v_rade += 1
+			while self.on_board(field_x - (i[0] * j), field_y - (i[1] * j)) and \
+					board[field_x][field_y] == board[field_x - (i[0] * j)][field_y - (i[1] * j)]:
+				in_row += 1
 				j += 1
 
-			if v_rade > maximum:
-				maximum = v_rade
+			if in_row > maximum:
+				maximum = in_row
 
 		return maximum
 
-	def ohodnoceni_planu(self, plan):
+	def evaluate_board(self, board):
 		'''
-		Ohodnocení každého pole na hracím plánu dle počtu kamenů v řadě pro jednotlivé hráče
-		plan: hrací plán
-		return: rozdíl počtu kamenů v řadě mezi hráči
+		Evaluates each field on the game board according to the number of stones in a row for each player
+		board: game board
+		return: difference in the number of stones in a row between players
 		'''
-		# Nejmenší počáteční hodnota
-		pocitac_max = -math.inf
-		hrac_max = -math.inf
+		# Smallest starting value
+		comp_max = -math.inf
+		human_max = -math.inf
 
-		for x in range(self.sirka):
-			for y in range(self.vyska):
-				if plan[x][y] == Pole.hrac:
-					hodnota = self.pocet_v_rade(x, y, plan)
-					if hodnota > hrac_max:
-						hrac_max = hodnota
+		for x in range(self.width):
+			for y in range(self.height):
+				if board[x][y] == Field.human:
+					value = self.no_in_row(x, y, board)
+					if value > human_max:
+						human_max = value
 					
-				elif plan[x][y] == Pole.pocitac:
-					hodnota = self.pocet_v_rade(x, y, plan)
-					if hodnota > pocitac_max:
-						pocitac_max = hodnota
+				elif board[x][y] == Field.computer:
+					value = self.no_in_row(x, y, board)
+					if value > comp_max:
+						comp_max = value
 
-		return pocitac_max - hrac_max
+		return comp_max - human_max
 
-	def je_na_planu(self, pole_x, pole_y):
+	def on_board(self, field_x, field_y):
 		'''
-		Je pole na hracím plánu?
-		pole_x: x-souřadnice pole
-		pole_y: y-souřadnice pole
-		return: "True" pokud je pole na hracím plánu, jinak "False"
+		Is this field on the game board?
+		field_x: x-coordinate of the field
+		field_y: y-coordinate of the field
+		return: "True" if field is on the game board else "False"
 		'''
-		if pole_x < 0 or pole_x >= self.sirka:
+		if field_x < 0 or field_x >= self.width:
 			return False
-		if pole_y < 0 or pole_y >= self.vyska:
+		if field_y < 0 or field_y >= self.height:
 			return False
 		else:
 			return True
 
 
-okno = Tk()
+window = Tk()
 
 
-hra = Piskvorky(okno, 3, 3, 3, 2)
+game = Tic_tac_toe(window, 3, 3, 3, 2)
 
-okno.mainloop()
+window.mainloop()
