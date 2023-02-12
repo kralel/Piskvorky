@@ -15,18 +15,18 @@ class Tic_tac_toe:
 	canvas = None
 	width = 0
 	height = 0
-	no_win = 0
+	for_win = 0
 	difficulty = 0
 	board = []
 	moves = 0													# Number of placed stones
 
-	def __init__(self, window, height, width, no_win, difficulty):		
+	def __init__(self, window, height, width, for_win, difficulty):		
 		try:
 			if height < 0:
 				raise ValueError("Výška je záporná!")
 			elif width < 0:
 				raise ValueError("Šířka je záporná!")
-			elif no_win < 0:
+			elif for_win < 0:
 				raise ValueError("Počet potřebných kamenů na výhru je záporný!")
 			elif difficulty < 0:
 				raise ValueError("Obtížnost je záporná!")
@@ -39,7 +39,7 @@ class Tic_tac_toe:
 		self.canvas.bind("<Button-1>", self.move)				# Call function move on left mouse button click
 		self.width = width
 		self.height = height
-		self.no_win = no_win
+		self.for_win = for_win
 		self.difficulty = difficulty
 		for x in range(width):
 			# Column
@@ -76,7 +76,7 @@ class Tic_tac_toe:
 			self.board[field_x][field_y] = Field.computer
 		self.moves += 1
 
-		if self.no_in_row(field_x, field_y, self.board) == self.no_win:
+		if self.no_in_row(field_x, field_y, self.board) == self.for_win:
 			if self.board[field_x][field_y] == Field.human:
 				if messagebox.showinfo(title="Konec hry", message="Vyhráli jste!"):
 					exit()
@@ -124,7 +124,7 @@ class Tic_tac_toe:
 		if self.moves == self.height * self.width:				# Draw
 			return [-1, -1, 0]
 		
-		# Evaluation of board
+		# Evaluation of current board
 		best_comp = self.in_row(board, Field.computer)
 		best_human = self.in_row(board, Field.human)
 
@@ -141,15 +141,17 @@ class Tic_tac_toe:
 					self.moves += 1
 					if depth == 0:
 						if player_on_move == Field.computer:
-							evaluation = [x, y, self.no_in_row(x, y, board)]
-							if best_comp > evaluation[2]:
-								evaluation[2] = best_comp
+							value = self.no_in_row(x, y, board)
+							if value > best_comp:
+								best_comp = value
 						else:
-							evaluation = [x, y, -self.no_in_row(x, y, board)]
-							if -best_human < evaluation[2]:
-								evaluation[2] = -best_human
+							value = self.no_in_row(x, y, board)
+							if value > best_human:
+								best_human = value
+						evaluation = [x, y, best_comp - best_human]
 					else:
 						evaluation = [x, y, self.minimax(depth - 1, board, -player_on_move, alpha, beta)[2]]
+					
 					# Remove
 					board[x][y] = Field.empty_field
 					self.moves -= 1
@@ -171,7 +173,7 @@ class Tic_tac_toe:
 							return best
 						alpha = max(alpha, best[2])
 
-				elif self.no_in_row(x, y, board) == self.no_win:
+				elif self.no_in_row(x, y, board) == self.for_win:
 					if board[x][y] == Field.human:
 						return [-1, -1, -math.inf]
 					else:
