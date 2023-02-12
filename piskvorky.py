@@ -125,8 +125,9 @@ class Tic_tac_toe:
 			return [-1, -1, 0]
 		
 		# Evaluation of current board
-		best_comp = self.in_row(board, Field.computer)
-		best_human = self.in_row(board, Field.human)
+		if depth == 0:
+			best_comp = self.in_row(board, Field.computer)
+			best_human = self.in_row(board, Field.human)
 
 		# Random selection of field order
 		seq_x = list(range(self.width))
